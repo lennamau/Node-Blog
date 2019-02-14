@@ -4,6 +4,11 @@ const Users = require("./userDb");
 
 const router = express.Router();
 
+function upperCaser(req, res, next){
+    req.body.name = req.body.name.toUpperCase();
+    next();
+}
+
 //Get
 
 router.get("/", (req, res) => {
@@ -35,7 +40,7 @@ router.get("/:id", (req, res) => {
 
 //Post
 
-router.post("/", (req, res) => {
+router.post("/", upperCaser, (req, res) => {
   const newUser = req.body;
   if (!newUser.name) {
     res.status(400).json({ message: "Please provide a new user name" });
@@ -77,13 +82,45 @@ router.delete('/:id', (req, res) => {
 
 //Put
 
-router.put('/:id', (req, res) => {
+router.put('/:id', upperCaser, (req, res) => {
     const id = req.params.id;
     const updatedUser = req.body;
 
     if(!updatedUser.name) {
-        res.status(400).json ({ message: "Please provide a name for the user"})
+        res.status(400).json({ message: "Please provide a name for the user"})
+    } else {
+        Users.update(id, updatedUser)
+            .then(updated => {
+                if(updated){
+                    Users.getById(id)
+                    .then(user => {
+                        res.status(200).json({user})
+                    })
+                } else {
+                    res.status(404).json({ message:"The user with the specified ID does not exist"})
+                }
+            })
+            .catch(err => {
+                res.status(500).json({ error: "The user could not be updated"})
+            })
     }
+})
+
+//Get all posts for user based on ID
+
+router.get('/:id/posts', (req, res) => {
+     Users.getUserPosts(req.params.id)
+      .then(posts => {
+          if(posts.length > 0 ) {
+              res.status(200).json({posts})
+          } else {
+              res.status(404).json({ error: "Could not find any posts for user"})
+          }
+      })
+      .catch(err => {
+          res.status(500).json({ error: "Error getting posts for the specified user"})
+      })
+
 })
 
 module.exports = router;
