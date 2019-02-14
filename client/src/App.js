@@ -3,7 +3,7 @@ import axios from 'axios'
 
 import './App.css';
 
-const url = 'http://localhost:4000/api/users'
+const url = 'https://node-blog-lenna.herokuapp.com/api/users/'
 
 class App extends Component {
   constructor(props) {
@@ -41,7 +41,10 @@ class App extends Component {
         axios.get(`${url}/`)
           .then(res => {
             this.setState({
-              users: res.data
+              users: res.data,
+              newUser:{
+                name:''
+              }
             })
           })
       })
